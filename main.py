@@ -11,10 +11,10 @@ def download_txt(book_id, filename):
     params = {"id": book_id}
     response = requests.get(url, params=params)
     response.raise_for_status()
-
-    book_name = sanitize_filepath(filename)
-    with open(f"{image_path}{book_name}.txt", "w") as file:
-        file.write(response.text)
+    if not check_for_redirect(response):
+        book_name = sanitize_filepath(filename)
+        with open(f"{image_path}{book_name}.txt", "w") as file:
+            file.write(response.text)
 
 
 def check_for_redirect(response):
@@ -44,7 +44,7 @@ if __name__ == "__main__":
                     .text.split("::")
                 )
                 book_name, author = map(str.strip, book_name_and_author)
-                download_txt(book_id, book_name)
+                download_txt(book_id, f"{book_id}.{book_name}")
 
         except Exception as ex:
             raise requests.exceptions.HTTPError(ex)
