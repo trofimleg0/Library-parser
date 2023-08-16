@@ -60,10 +60,13 @@ if __name__ == "__main__":
                     .text.split("::")
                 )
                 book_name, author = map(str.strip, book_name_and_author)
-                download_image(
-                    absolute_book_img_url, relative_book_img_url, path
-                )
-                download_txt(book_id, f"{book_id}.{book_name}", path)
-
+                book_comments = soup.find_all(class_="texts")
+                comments = []
+                for book_comment in book_comments:
+                    comments.append(book_comment.find('span').text)
+                # download_image(
+                #     absolute_book_img_url, relative_book_img_url, path
+                # )
+                # download_txt(book_id, f"{book_id}.{book_name}", path)
         except Exception as ex:
             raise requests.exceptions.HTTPError(ex)
