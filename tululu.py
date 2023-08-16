@@ -1,10 +1,25 @@
 import os
 import requests
+
 from bs4 import BeautifulSoup
 from pathlib import Path
 from dotenv import load_dotenv
 from urllib.parse import urljoin
+from argparse import ArgumentParser
 from pathvalidate import sanitize_filepath
+
+
+def get_args():
+    parser = ArgumentParser("Select a range of IDs to download books")
+    parser.add_argument(
+        "-s", "--start_id", default="1", type=int, help="IDs start range"
+    )
+    parser.add_argument(
+        "-e", "--end_id", default="10", type=int, help="IDs end range"
+    )
+    args = parser.parse_args()
+
+    return args.start_id, args.end_id
 
 
 def parse_one_page(soup, url):
@@ -69,7 +84,9 @@ if __name__ == "__main__":
     load_dotenv()
     path = os.environ["WD"]
 
-    for book_id in range(1, 11):
+    start_id, end_id = get_args()
+
+    for book_id in range(start_id, end_id + 1):
         url = f"https://tululu.org/b{book_id}/"
         try:
             response = requests.get(url)
