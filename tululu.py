@@ -61,9 +61,16 @@ if __name__ == "__main__":
                 )
                 book_name, author = map(str.strip, book_name_and_author)
                 book_comments = soup.find_all(class_="texts")
+                book_genres_soup = soup.find('span', class_='d_book').find_all("a")
+                book_genres = []
+                for book_genre_soup in book_genres_soup:
+                    book_genres.append(book_genre_soup.text)
                 comments = []
                 for book_comment in book_comments:
                     comments.append(book_comment.find('span').text)
+                print(book_name)
+                print(book_genres)
+
                 # download_image(
                 #     absolute_book_img_url, relative_book_img_url, path
                 # )
