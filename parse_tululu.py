@@ -18,9 +18,17 @@ def get_args():
     parser.add_argument(
         "-e", "--end_id", default="10", type=int, help="IDs end range"
     )
-    args = parser.parse_args()
+    parser.add_argument(
+        "-d", "--dest_folder", default=".", type=str, help="The path where the parsing result will be recorded"
+    )
+    parser.add_argument(
+        "-i", "--skip_imgs", default=False, type=bool, help="Allows you not to download images if state=True"
+    )
+    parser.add_argument(
+        "-t", "--skip_txt", default=False, type=bool, help="Allows you not to download books is state=True"
+    )
 
-    return args.start_id, args.end_id
+    return parser.parse_args()
 
 
 def check_for_redirect(response):
@@ -90,13 +98,13 @@ def download_json(all_books_params, path, filename):
 
 if __name__ == "__main__":
     load_dotenv()
-    path = os.environ["WD"]
-    books_folder_name = os.environ["BOOKS"]
-    images_folder_name = os.environ["IMAGES"]
-
-    start_id, end_id = get_args()
+    args = get_args()
+    path = args.dest_folder
+    books_folder_name = "books"
+    images_folder_name = "images"
+    
     all_books_params = []
-    for book_id in range(start_id, end_id + 1):
+    for book_id in range(args.start_id, args.end_id + 1):
         url = f"https://tululu.org/b{book_id}/"
         try:
             response = requests.get(url)
@@ -125,8 +133,10 @@ if __name__ == "__main__":
                     "book_path": book_path,
                 }
                 all_books_params.append(book_params)
-                download_image(img_url, img_name, path, images_folder_name)
-                download_txt(book_id, f"{book_id}.{title}", path, books_folder_name)
+                if not args.skip_imgs:
+                    download_image(img_url, img_name, path, images_folder_name)
+                if not args.skip_txt:
+                    download_txt(book_id, f"{book_id}.{title}", path, books_folder_name)
         except Exception as ex:
             raise requests.exceptions.HTTPError(ex)
     download_json(all_books_params, path, "books_info.json")
