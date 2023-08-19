@@ -2,7 +2,7 @@
 
 ## Description ##
 
-The script in the repository parse data from the [tululu.org](https://tululu.org/) site by book IDs.
+The scripts in the repository parse data from the [tululu.org](https://tululu.org/) site by book IDs or by category.
 
 ## How to install? ##
 
@@ -16,11 +16,39 @@ pip install -r requirements.txt
 Recommended using [virtualenv/venv](https://docs.python.org/3/library/venv.html)
 
 ## Launch ##
-1) Add to `.env` file:
-   - `WD` - The path to the directory where you will download books and images
-2) Run the script by selecting the IDs for books and pictures that will be downloaded:
+### parse_tululu.py ###
+This script downloads books of any category by selecting id-books.
+The script supports optional arguments that can be selected:
+
+```commandline
+-s, --start_id -- Starting range of IDs to download. Default=1.
+-e, --end_id -- Ending range of IDs to download. Default=10.
+-d, --dest_folder -- The path where the parsing result will be recorded. Default='CWD'.
+-i, --skip_imgs -- Allows you not to download images if it's True. Default=False.
+-t, --skip_txt -- Allows you not to download books if it's True. Default=False.
+```
+
+Run the script to download books and pictures by IDs:
   ```commandline
-  python tululu.py -s 10 -e 20
+  python parse_tululu.py
+  ```
+
+### parse_tululu_category.py ###
+This script loads all the books of the selected category.
+The script supports optional arguments that can be selected:
+
+```commandline
+-s, --start_id -- Start page range. Default=1.
+-e, --end_id -- End page range. Default=None.
+-c, --category_id -- ID of the book category. Default=55('Science fiction').
+-d, --dest_folder -- The path where the parsing result will be recorded. Default='CWD'.
+-i, --skip_imgs -- Allows you not to download images if it's True. Default=False.
+-t, --skip_txt -- Allows you not to download books if it's True. Default=False.
+
+```
+Run the script to download books and pictures by category:
+  ```commandline
+  python parse_tululu_category.py
   ```
 
 ## Project Goals ##
