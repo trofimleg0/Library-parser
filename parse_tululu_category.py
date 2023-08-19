@@ -10,6 +10,7 @@ from parse_tululu import (
     check_for_redirect,
     download_image,
     download_txt,
+    download_json,
     get_book_params,
 )
 
@@ -17,26 +18,26 @@ from parse_tululu import (
 def get_args():
     parser = ArgumentParser("Select a range of pages to download books")
     parser.add_argument(
-        "-s", "--start_page", default="1", type=int, help="Pages start range"
+        "-s", "--start_page", default="1", type=int, help="Start page range"
     )
     parser.add_argument(
-        "-e", "--end_page", default="4", type=int, help="Pages end range"
+        "-e", "--end_page", default=None, type=int, help="End page range"
     )
     args = parser.parse_args()
 
     return args.start_page, args.end_page
 
 
-def extract_number_from_string(input_string):
-    number = "".join(filter(str.isdigit, input_string))
-    return int(number) if number else None
+def get_book_id(relative_book_url):
+    book_id = "".join(filter(str.isdigit, relative_book_url))
+    return int(book_id) if book_id else None
 
 
 if __name__ == "__main__":
     load_dotenv()
     path = os.environ["WD"]
-    books_folder_name = os.environ["BOOKS"]
-    images_folder_name = os.environ["IMAGES"]
+    books_folder_name = os.environ["BOOKS_BY_CATEGORY"]
+    images_folder_name = os.environ["IMAGES_BY_CATEGORY"]
 
     start_page, end_page = get_args()
     all_books_params = []
@@ -80,11 +81,9 @@ if __name__ == "__main__":
                         "book_path": book_path,
                     }
                     all_books_params.append(book_params)
-                    book_id = extract_number_from_string(relative_book_url)
-                    # download_image(img_url, img_name, path, images_folder_name)
-                    # download_txt(book_id, f"{book_id}.{title}", path, books_folder_name)
+                    book_id = get_book_id(relative_book_url)
+                    download_image(img_url, img_name, path, images_folder_name)
+                    download_txt(book_id, f"{book_id}.{title}", path, books_folder_name)
         except Exception as ex:
             raise requests.exceptions.HTTPError(ex)
-    all_books_params_json = "books_info_by_category.json"
-    with open(f"{path}/{all_books_params_json}", "w") as file:
-        file.write(json.dumps(all_books_params, ensure_ascii=False))
+    download_json(all_books_params, path, "books_info_by_category.json")

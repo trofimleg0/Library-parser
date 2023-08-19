@@ -1,5 +1,8 @@
 env/
 books/
 images/
+books_by_category/
+images_by_category/
 *.env
 *__pycache__/
+*.json

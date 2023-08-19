@@ -83,6 +83,11 @@ def download_txt(book_id, filename, path, books_folder_name):
             file.write(response.text)
 
 
+def download_json(all_books_params, path, filename):
+    with open(f"{path}/{filename}", "w") as file:
+        file.write(json.dumps(all_books_params, ensure_ascii=False))
+
+
 if __name__ == "__main__":
     load_dotenv()
     path = os.environ["WD"]
@@ -120,10 +125,8 @@ if __name__ == "__main__":
                     "book_path": book_path,
                 }
                 all_books_params.append(book_params)
-                # download_image(img_url, img_name, path, images_folder_name)
-                # download_txt(book_id, f"{book_id}.{title}", path, books_folder_name)
+                download_image(img_url, img_name, path, images_folder_name)
+                download_txt(book_id, f"{book_id}.{title}", path, books_folder_name)
         except Exception as ex:
             raise requests.exceptions.HTTPError(ex)
-    all_books_params_json = "books_info.json"
-    with open(f"{path}/{all_books_params_json}", "w") as file:
-        file.write(json.dumps(all_books_params, ensure_ascii=False))
+    download_json(all_books_params, path, "books_info.json")
