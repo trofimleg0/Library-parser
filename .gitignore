@@ -2,3 +2,4 @@ env/
 books/
 images/
 *.env
+*__pycache__/
