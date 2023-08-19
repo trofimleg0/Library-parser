@@ -16,19 +16,38 @@ from parse_tululu import (
 def get_args():
     parser = ArgumentParser("Select a range of pages to download books")
     parser.add_argument(
-        "-s", "--start_page", default="1", type=int, help="Start page range"
+        "-s", "--start_page", default=1, type=int, help="Start page range"
     )
     parser.add_argument(
         "-e", "--end_page", default=None, type=int, help="End page range"
     )
     parser.add_argument(
-        "-d", "--dest_folder", default=".", type=str, help="The path where the parsing result will be recorded"
+        "-c",
+        "--category_id",
+        default=55,
+        type=int,
+        help="ID of the book category",
     )
     parser.add_argument(
-        "-i", "--skip_imgs", default=False, type=bool, help="Allows you not to download images if state=True"
+        "-d",
+        "--dest_folder",
+        default=".",
+        type=str,
+        help="The path where the parsing result will be recorded",
     )
     parser.add_argument(
-        "-t", "--skip_txt", default=False, type=bool, help="Allows you not to download books is state=True"
+        "-i",
+        "--skip_imgs",
+        default=False,
+        type=bool,
+        help="Allows you not to download images if it's True",
+    )
+    parser.add_argument(
+        "-t",
+        "--skip_txt",
+        default=False,
+        type=bool,
+        help="Allows you not to download books if it's True",
     )
 
     return parser.parse_args()
@@ -49,7 +68,7 @@ if __name__ == "__main__":
 
     all_books_params = []
     for page in range(args.start_page, args.end_page + 1):
-        url = f"https://tululu.org/l55/{page}/"
+        url = f"https://tululu.org/l{args.category_id}/{page}/"
         try:
             response = requests.get(url)
             response.raise_for_status()
@@ -90,9 +109,16 @@ if __name__ == "__main__":
                     all_books_params.append(book_params)
                     book_id = get_book_id(relative_book_url)
                     if not args.skip_imgs:
-                        download_image(img_url, img_name, path, images_folder_name)
+                        download_image(
+                            img_url, img_name, path, images_folder_name
+                        )
                     if not args.skip_txt:
-                        download_txt(book_id, f"{book_id}.{title}", path, books_folder_name)
+                        download_txt(
+                            book_id,
+                            f"{book_id}.{title}",
+                            path,
+                            books_folder_name,
+                        )
         except Exception as ex:
             raise requests.exceptions.HTTPError(ex)
     download_json(all_books_params, path, "books_info_by_category.json")

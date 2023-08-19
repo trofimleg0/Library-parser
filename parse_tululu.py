@@ -13,19 +13,39 @@ from pathvalidate import sanitize_filepath
 def get_args():
     parser = ArgumentParser("Select a range of IDs to download books")
     parser.add_argument(
-        "-s", "--start_id", default="1", type=int, help="IDs start range"
+        "-s",
+        "--start_id",
+        default="1",
+        type=int,
+        help="Starting range of IDs to download",
     )
     parser.add_argument(
-        "-e", "--end_id", default="10", type=int, help="IDs end range"
+        "-e",
+        "--end_id",
+        default="10",
+        type=int,
+        help="Ending range of IDs to download",
     )
     parser.add_argument(
-        "-d", "--dest_folder", default=".", type=str, help="The path where the parsing result will be recorded"
+        "-d",
+        "--dest_folder",
+        default=".",
+        type=str,
+        help="The path where the parsing result will be recorded",
     )
     parser.add_argument(
-        "-i", "--skip_imgs", default=False, type=bool, help="Allows you not to download images if state=True"
+        "-i",
+        "--skip_imgs",
+        default=False,
+        type=bool,
+        help="Allows you not to download images if it's True",
     )
     parser.add_argument(
-        "-t", "--skip_txt", default=False, type=bool, help="Allows you not to download books is state=True"
+        "-t",
+        "--skip_txt",
+        default=False,
+        type=bool,
+        help="Allows you not to download books if it's True",
     )
 
     return parser.parse_args()
@@ -102,7 +122,7 @@ if __name__ == "__main__":
     path = args.dest_folder
     books_folder_name = "books"
     images_folder_name = "images"
-    
+
     all_books_params = []
     for book_id in range(args.start_id, args.end_id + 1):
         url = f"https://tululu.org/b{book_id}/"
@@ -136,7 +156,9 @@ if __name__ == "__main__":
                 if not args.skip_imgs:
                     download_image(img_url, img_name, path, images_folder_name)
                 if not args.skip_txt:
-                    download_txt(book_id, f"{book_id}.{title}", path, books_folder_name)
+                    download_txt(
+                        book_id, f"{book_id}.{title}", path, books_folder_name
+                    )
         except Exception as ex:
             raise requests.exceptions.HTTPError(ex)
     download_json(all_books_params, path, "books_info.json")
