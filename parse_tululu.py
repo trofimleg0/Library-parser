@@ -30,32 +30,32 @@ def check_for_redirect(response):
 
 
 def get_book_params(soup, url, books_folder, images_folder):
-    relative_img_url = soup.find(class_="bookimage").find("img")["src"]
+    relative_img_url = soup.select_one(".bookimage img")["src"]
     img_url = urljoin(url, relative_img_url)
     img_name = relative_img_url.split("/")[-1]
-    
-    title_and_author = (
-        soup.find("td", class_="ow_px_td")
-        .find("div", id="content")
-        .find("h1")
-        .text.split("::")
-    )
+
+    title_and_author = soup.select_one("body h1").text.split("::")
     title, author = map(str.strip, title_and_author)
 
-    book_genres_soup = soup.find("span", class_="d_book").find_all("a")
-    genres = []
-    for book_genre_soup in book_genres_soup:
-        genres.append(book_genre_soup.text)
+    genres_soup = soup.select("span.d_book a")
+    genres = [genre.text for genre in genres_soup]
 
-    book_comments_soup = soup.find_all("div", class_='texts')
-    comments = []
-    for book_comment_soup in book_comments_soup:
-        comments.append(book_comment_soup.find("span", class_="black").text)
+    comments_soup = soup.select(".texts span")
+    comments = [comment.text for comment in comments_soup]
 
     img_src = os.path.join(images_folder, img_name)
     book_path = os.path.join(books_folder, sanitize_filepath(title))
 
-    return title, author, genres, comments, img_name, img_src, book_path, img_url
+    return (
+        title,
+        author,
+        genres,
+        comments,
+        img_name,
+        img_src,
+        book_path,
+        img_url,
+    )
 
 
 def download_image(url, img_name, path, images_folder_name):
@@ -96,14 +96,20 @@ if __name__ == "__main__":
         try:
             response = requests.get(url)
             response.raise_for_status()
-            
+
             if not check_for_redirect(response):
                 soup = BeautifulSoup(response.text, "lxml")
-                title, author, genres, comments, img_name, img_src, book_path, img_url = get_book_params(
-                    soup, 
-                    url,
-                    books_folder_name, 
-                    images_folder_name
+                (
+                    title,
+                    author,
+                    genres,
+                    comments,
+                    img_name,
+                    img_src,
+                    book_path,
+                    img_url,
+                ) = get_book_params(
+                    soup, url, books_folder_name, images_folder_name
                 )
                 book_params = {
                     "title": title,
