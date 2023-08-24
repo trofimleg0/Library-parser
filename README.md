@@ -39,7 +39,7 @@ The script supports optional arguments that can be selected:
 
 ```commandline
 -s, --start_id -- Start page range. Default=1.
--e, --end_id -- End page range. Default=None.
+-e, --end_id -- End page range. Default=1.
 -c, --category_id -- ID of the book category. Default=55('Science fiction').
 -d, --dest_folder -- The path where the parsing result will be recorded. Default='CWD'.
 -i, --skip_imgs -- Allows you not to download images if it's True. Default=False.

@@ -19,7 +19,7 @@ def get_args():
         "-s", "--start_page", default=1, type=int, help="Start page range"
     )
     parser.add_argument(
-        "-e", "--end_page", default=None, type=int, help="End page range"
+        "-e", "--end_page", default=1, type=int, help="End page range"
     )
     parser.add_argument(
         "-c",
