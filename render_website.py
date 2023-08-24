@@ -1,15 +1,11 @@
 import json
 from jinja2 import Environment, FileSystemLoader, select_autoescape
+from livereload import Server
 
 
-def get_books_params(filename):
-    with open(filename, 'r') as file:
+def on_reload():
+    with open('books_info_by_category.json', 'r') as file:
         books = json.loads(file.read())
-    return books
-
-
-if __name__ == '__main__':
-    books = get_books_params("books_info_by_category.json")
     env = Environment(
         loader=FileSystemLoader('.'),
         autoescape=select_autoescape(['html'])
@@ -19,3 +15,12 @@ if __name__ == '__main__':
 
     with open('index.html', 'w', encoding='utf8') as file:
         file.write(rendered_page)
+
+
+if __name__ == '__main__':
+    on_reload()
+
+    server = Server()
+    server.watch('./template.html', on_reload)
+    server.serve(root='./index.html')
+    
