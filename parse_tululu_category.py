@@ -1,6 +1,9 @@
+import os
 import requests
+
 from bs4 import BeautifulSoup
 from argparse import ArgumentParser
+from urllib.error import URLError
 from pathlib import Path
 from dotenv import load_dotenv
 from urllib.parse import urljoin
@@ -62,9 +65,11 @@ if __name__ == "__main__":
     load_dotenv()
     args = get_args()
     path = args.dest_folder
-    Path(path).mkdir(parents=True, exist_ok=True)
-    books_folder_name = "books_by_category"
-    images_folder_name = "images_by_category"
+
+    imgs_folder_path = os.path.join(path, "images_by_category")
+    books_folder_path = os.path.join(path, "books_by_category")
+    Path(imgs_folder_path).mkdir(parents=True, exist_ok=True)
+    Path(books_folder_path).mkdir(parents=True, exist_ok=True)
 
     all_books_params = []
     for page in range(args.start_page, args.end_page + 1):
@@ -84,41 +89,40 @@ if __name__ == "__main__":
                 response = requests.get(book_url)
                 response.raise_for_status()
 
-                if not check_for_redirect(response):
-                    soup = BeautifulSoup(response.text, "lxml")
-                    (
-                        title,
-                        author,
-                        genres,
-                        comments,
-                        img_name,
-                        img_src,
-                        book_path,
-                        img_url,
-                    ) = get_book_params(
-                        soup, url, books_folder_name, images_folder_name
+                check_for_redirect(response)
+                book_id = get_book_id(relative_book_url)
+                soup = BeautifulSoup(response.text, "lxml")
+                (
+                    title,
+                    author,
+                    genres,
+                    comments,
+                    img_name,
+                    img_url,
+                ) = get_book_params(soup, url)
+
+                if not args.skip_imgs:
+                    img_src = download_image(
+                        img_url, img_name, imgs_folder_path
                     )
-                    book_params = {
-                        "title": title,
-                        "author": author,
-                        "genres": genres,
-                        "comments": comments,
-                        "img_src": img_src,
-                        "book_path": book_path,
-                    }
-                    all_books_params.append(book_params)
-                    book_id = get_book_id(relative_book_url)
-                    if not args.skip_imgs:
-                        download_image(
-                            img_url, img_name, path, images_folder_name
-                        )
-                    if not args.skip_txt:
-                        download_txt(
-                            book_id,
-                            f"{book_id}.{title}",
-                            path,
-                            books_folder_name,
-                        )
+                if not args.skip_txt:
+                    filename = f"{book_id}.{title}"
+                    book_path = download_txt(
+                        book_id, filename, books_folder_path
+                    )
+
+                book_params = {
+                    "title": title,
+                    "author": author,
+                    "genres": genres,
+                    "comments": comments,
+                    "img_src": os.path.relpath(img_src),
+                    "book_path": os.path.relpath(book_path),
+                }
+                all_books_params.append(book_params)
+        except URLError:
+            print(f"{url} - Book not found")
+            continue
         except Exception as ex:
             raise requests.exceptions.HTTPError(ex)
     download_json(all_books_params, path, "books_info_by_category.json")

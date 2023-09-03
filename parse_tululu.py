@@ -4,6 +4,7 @@ import requests
 
 from bs4 import BeautifulSoup
 from argparse import ArgumentParser
+from urllib.error import URLError
 from pathlib import Path
 from dotenv import load_dotenv
 from urllib.parse import urljoin
@@ -52,12 +53,11 @@ def get_args():
 
 
 def check_for_redirect(response):
-    if len(response.history) > 0:
-        return True
-    return False
+    if response.history:
+        raise URLError("Url not found")
 
 
-def get_book_params(soup, url, books_folder, images_folder):
+def get_book_params(soup, url):
     relative_img_url = soup.select_one(".bookimage img")["src"]
     img_url = urljoin(url, relative_img_url)
     img_name = relative_img_url.split("/")[-1]
@@ -71,44 +71,39 @@ def get_book_params(soup, url, books_folder, images_folder):
     comments_soup = soup.select(".texts span")
     comments = [comment.text for comment in comments_soup]
 
-    img_src = os.path.join(images_folder, img_name)
-    book_path = os.path.join(books_folder, sanitize_filepath(title))
-
     return (
         title,
         author,
         genres,
         comments,
         img_name,
-        img_src,
-        book_path,
         img_url,
     )
 
 
-def download_image(url, img_name, path, images_folder_name):
+def download_image(url, img_name, imgs_folder):
     response = requests.get(url)
     response.raise_for_status()
 
-    img_path = os.path.join(path, images_folder_name)
-    Path(img_path).mkdir(parents=True, exist_ok=True)
-    if not check_for_redirect(response):
-        with open(f"{img_path}/{img_name}", "wb") as file:
-            file.write(response.content)
+    check_for_redirect(response)
+    img_path = f"{imgs_folder}/{img_name}"
+    with open(img_path, "wb") as file:
+        file.write(response.content)
+    return img_path
 
 
-def download_txt(book_id, filename, path, books_folder_name):
+def download_txt(book_id, filename, books_folder_path):
     url = "https://tululu.org/txt.php"
     params = {"id": book_id}
     response = requests.get(url, params=params)
     response.raise_for_status()
 
-    book_path = os.path.join(path, books_folder_name)
-    Path(book_path).mkdir(parents=True, exist_ok=True)
-    if not check_for_redirect(response):
-        book_name = sanitize_filepath(filename)
-        with open(f"{book_path}/{book_name}.txt", "w") as file:
-            file.write(response.text)
+    check_for_redirect(response)
+    book_name = sanitize_filepath(filename)
+    book_path = f"{books_folder_path}/{book_name}.txt"
+    with open(book_path, "w") as file:
+        file.write(response.text)
+    return book_path
 
 
 def download_json(all_books_params, path, filename):
@@ -118,10 +113,14 @@ def download_json(all_books_params, path, filename):
 
 if __name__ == "__main__":
     load_dotenv()
+
     args = get_args()
     path = args.dest_folder
-    books_folder_name = "books"
-    images_folder_name = "images"
+
+    imgs_folder_path = os.path.join(path, "images")
+    books_folder_path = os.path.join(path, "books")
+    Path(imgs_folder_path).mkdir(parents=True, exist_ok=True)
+    Path(books_folder_path).mkdir(parents=True, exist_ok=True)
 
     all_books_params = []
     for book_id in range(args.start_id, args.end_id + 1):
@@ -130,35 +129,35 @@ if __name__ == "__main__":
             response = requests.get(url)
             response.raise_for_status()
 
-            if not check_for_redirect(response):
-                soup = BeautifulSoup(response.text, "lxml")
-                (
-                    title,
-                    author,
-                    genres,
-                    comments,
-                    img_name,
-                    img_src,
-                    book_path,
-                    img_url,
-                ) = get_book_params(
-                    soup, url, books_folder_name, images_folder_name
-                )
-                book_params = {
-                    "title": title,
-                    "author": author,
-                    "genres": genres,
-                    "comments": comments,
-                    "img_src": img_src,
-                    "book_path": book_path,
-                }
-                all_books_params.append(book_params)
-                if not args.skip_imgs:
-                    download_image(img_url, img_name, path, images_folder_name)
-                if not args.skip_txt:
-                    download_txt(
-                        book_id, f"{book_id}.{title}", path, books_folder_name
-                    )
+            check_for_redirect(response)
+            soup = BeautifulSoup(response.text, "lxml")
+            (
+                title,
+                author,
+                genres,
+                comments,
+                img_name,
+                img_url,
+            ) = get_book_params(soup, url)
+
+            if not args.skip_imgs:
+                img_src = download_image(img_url, img_name, imgs_folder_path)
+            if not args.skip_txt:
+                filename = f"{book_id}.{title}"
+                book_path = download_txt(book_id, filename, books_folder_path)
+
+            book_params = {
+                "title": title,
+                "author": author,
+                "genres": genres,
+                "comments": comments,
+                "img_src": os.path.relpath(img_src),
+                "book_path": os.path.relpath(book_path),
+            }
+            all_books_params.append(book_params)
+        except URLError:
+            print(f"{url} - Book not found")
+            continue
         except Exception as ex:
             raise requests.exceptions.HTTPError(ex)
     download_json(all_books_params, path, "books_info.json")

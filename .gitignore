@@ -6,3 +6,4 @@ images_by_category/
 *.env
 *__pycache__/
 *.json
+index.html
