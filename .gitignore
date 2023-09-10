@@ -3,7 +3,7 @@ books/
 images/
 books_by_category/
 images_by_category/
+pages/
 *.env
 *__pycache__/
 *.json
-index.html
