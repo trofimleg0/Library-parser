@@ -13,13 +13,17 @@ def on_reload():
     )
 
     # Create a directory for books
-    os.makedirs('pages', exist_ok=True)
+    os.makedirs("./pages", exist_ok=True)
 
     books_pages = list(chunked(books, 20))
     for num, books_on_page in enumerate(books_pages, 1):
         grouped_books = list(chunked(books_on_page, 2))
         template = env.get_template("template.html")
-        rendered_page = template.render(grouped_books=grouped_books)
+        rendered_page = template.render(
+            page_num=num,
+            grouped_books=grouped_books,
+            page_count=len(books_pages),
+        )
 
         with open(f"./pages/index{num}.html", "w", encoding="utf8") as file:
             file.write(rendered_page)
@@ -30,4 +34,4 @@ if __name__ == "__main__":
 
     server = Server()
     server.watch("./template.html", on_reload)
-    server.serve(root=".")
+    server.serve(root=".", default_filename="pages/index1.html")
