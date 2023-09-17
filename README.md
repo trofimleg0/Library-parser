@@ -51,6 +51,20 @@ Run the script to download books and pictures by category:
   python parse_tululu_category.py
   ```
 
+### render_website.py ###
+
+The script will create and run the site localy using `template.html` and  `books_info.json` files.
+
+Run the script:
+```commandline
+python3 render_website.py
+```
+An example of site work can be seen at the [Library_parser]().
+
+![](screen.jpg)
+
+=========================================================
+
 ## Project Goals ##
 
 The code is written for educational purposes - for a course on Python and web development on the [Devman](https://dvmn.org).
