@@ -1,6 +1,5 @@
 env/
-books/
-images/
-pages/
-*.env
+all_category_books/
+all_category_images/
+all_category_books_info.json
 *__pycache__/

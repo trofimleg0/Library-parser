@@ -66,8 +66,8 @@ if __name__ == "__main__":
     args = get_args()
     path = args.dest_folder
 
-    imgs_folder_path = os.path.join(path, "images_by_category")
-    books_folder_path = os.path.join(path, "books_by_category")
+    imgs_folder_path = os.path.join(path, "images")
+    books_folder_path = os.path.join(path, "books")
     Path(imgs_folder_path).mkdir(parents=True, exist_ok=True)
     Path(books_folder_path).mkdir(parents=True, exist_ok=True)
 
@@ -125,4 +125,4 @@ if __name__ == "__main__":
             continue
         except Exception as ex:
             raise requests.exceptions.HTTPError(ex)
-    download_json(all_books_params, path, "books_info_by_category.json")
+    download_json(all_books_params, path, "books_info.json")

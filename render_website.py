@@ -6,7 +6,7 @@ from more_itertools import chunked
 
 
 def on_reload():
-    with open("books_info_by_category.json", "r") as file:
+    with open("books_info.json", "r") as file:
         books = json.loads(file.read())
     env = Environment(
         loader=FileSystemLoader("."), autoescape=select_autoescape(["html"])
