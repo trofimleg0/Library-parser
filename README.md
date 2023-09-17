@@ -57,7 +57,7 @@ The script will create and run the site localy using `template.html` and  `books
 
 Run the script:
 ```commandline
-python3 render_website.py
+python render_website.py
 ```
 An example of site work can be seen at the [Library_parser](https://trofimleg0.github.io/Library-parser/pages/index1.html)
 
