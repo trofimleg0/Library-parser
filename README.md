@@ -59,11 +59,10 @@ Run the script:
 ```commandline
 python3 render_website.py
 ```
-An example of site work can be seen at the [Library_parser]().
+An example of site work can be seen at the [Library_parser](https://trofimleg0.github.io/Library-parser/pages/index1.html)
 
 ![](screen.jpg)
 
-=========================================================
 
 ## Project Goals ##
 
