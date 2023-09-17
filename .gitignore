@@ -4,4 +4,3 @@ images/
 pages/
 *.env
 *__pycache__/
-*.json
